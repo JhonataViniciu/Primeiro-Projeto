@@ -18,7 +18,7 @@
        FD CLIENTES.
        01  CLIENTES-REG.
            05 CLIENTES-CHAVE.
-              10 CLIENTES-FONE PIC 9(09).
+              10 CLIENTES-FONE PIC 9(11).
            05 CLIENTES-NOME    PIC X(30).
            05 CLIENTES-EMAIL   PIC X(40).
 
@@ -31,8 +31,8 @@
 
        SCREEN          SECTION.
        01  TELA.
-           05 LIMP-TELA.
-              10 BLANK-SCREN.
+           05 LIMPA-TELA.
+              10 BLANK SCREEN.
               10 LINE 01 COLUMN 01 PIC X(20) ERASE EOL
                  BACKGROUND-COLOR 3 .
               10 LINE 01 COLUMN 25 PIC X(20)
@@ -65,34 +65,41 @@
 
        01  MOSTRA-ERRO.
            05 MSG-ERRO.
+              10 LINE 16 COLUMN 01 ERASE EOL
+                               BACKGROUND-COLOR 3 .
               10 LINE 16 COLUMN 10 PIC X(30)
                                BACKGROUND-COLOR 3
                                FROM WRK-MSGERRO.
-              10 COLUMN PLUS 2 PIC X(01) USING WRK-TECLA.
+              10 COLUMN PLUS 2 PIC X(01)
+                               BACKGROUND-COLOR 3
+                               USING WRK-TECLA.
        PROCEDURE DIVISION.
        0001-PRINCIPAL  SECTION.
-           PERFORM 1000-INICIAR.
-           PERFORM 2000-PROCESSAR.
+           PERFORM 1000-INICIAR THRU 1100-MONTA-TELA.
+           PERFORM 2000-PROCESSAR UNTIL WRK-OPCAO = 'X'.
            PERFORM 3000-FINALIZAR.
            STOP RUN.
 
-       1000-INICIAR.
-            OPEN I-O CLIENTES
-            IF CLIENTES-STATUS EQUAL 35 THEN
+       1000-INICIAR SECTION.
+           OPEN I-O CLIENTES
+           IF CLIENTES-STATUS EQUAL 35 THEN
               OPEN OUTPUT CLIENTES
               CLOSE CLIENTES
               OPEN I-O CLIENTES
-            END-IF.
+           END-IF.
 
+
+       1100-MONTA-TELA.
            DISPLAY TELA.
-           ACCEPT MENU.
+             ACCEPT MENU.
 
        2000-PROCESSAR.
+               MOVE SPACES TO WRK-MSGERRO.
                EVALUATE WRK-OPCAO
                 WHEN 1
                   PERFORM 5000-INCLUIR
                 WHEN 2
-                  CONTINUE
+                  PERFORM 6000-CONSULTAR
                 WHEN 3
                   CONTINUE
                 WHEN 4
@@ -104,10 +111,7 @@
                      DISPLAY'ENTRE COM A OPCAO CORRETA'
                   END-IF
                END-EVALUATE.
-
-             DISPLAY TELA.
-               ACCEPT MENU.
-
+               PERFORM 1100-MONTA-TELA.
        3000-FINALIZAR.
                CLOSE CLIENTES.
 
@@ -122,5 +126,19 @@
                      MOVE 'JA EXISTE ' TO WRK-MSGERRO
                    ACCEPT MOSTRA-ERRO
                  END-WRITE.
-                     DISPLAY TELA.
-                       ACCEPT MENU.
+                 PERFORM 1100-MONTA-TELA.
+
+       6000-CONSULTAR.
+             MOVE 'MODULO - CONSULTA ' TO WRK-MODULO.
+             DISPLAY TELA.
+               DISPLAY TELA-REGISTRO.
+                 ACCEPT CHAVE.
+                 READ CLIENTES
+                   INVALID KEY
+                     MOVE 'ENCONTRADO'   TO WRK-MSGERRO
+                     DISPLAY SS-DADOS
+                   NOT INVALID KEY
+                     MOVE '-- NAO ENCONTRADO --' TO WRK-MSGERRO
+
+                 END-READ.
+                   ACCEPT MOSTRA-ERRO.
