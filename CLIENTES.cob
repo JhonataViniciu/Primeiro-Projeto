@@ -9,9 +9,13 @@
        FILE-CONTROL.
            SELECT CLIENTES ASSIGN TO 'C:\PROJETO COBOL\CLIENTES.DAT'
              ORGANIZATION IS INDEXED
-             ACCESS MODE IS RANDOM
+             ACCESS MODE IS DYNAMIC
              FILE STATUS IS CLIENTES-STATUS
              RECORD KEY IS CLIENTES-CHAVE.
+
+           SELECT RELATO ASSIGN TO 'C:\PROJETO COBOL\RELATO.DAT'
+             ORGANIZATION IS SEQUENTIAL.
+
 
        DATA DIVISION.
        FILE SECTION.
@@ -22,12 +26,18 @@
            05 CLIENTES-NOME    PIC X(30).
            05 CLIENTES-EMAIL   PIC X(40).
 
+       FD  RELATO.
+       01  RELATO-REG.
+           05 RELATO-DADOS     PIC X(79).
+
        WORKING-STORAGE SECTION.
        77  WRK-OPCAO           PIC X(1).
        77  WRK-MODULO          PIC X(25).
        77  WRK-TECLA           PIC X(1).
        77  WRK-MSGERRO         PIC X(30).
        77  CLIENTES-STATUS     PIC 9(02).
+       77  WRK-CONT-LIN        PIC 9(03).
+       77  WRK-QTREGISTROS     PIC 9(05) VALUE 0.
 
        SCREEN          SECTION.
        01  TELA.
@@ -46,10 +56,11 @@
            05 LINE 08 COLUMN 15 VALUE '2 - CONSULTAR'.
            05 LINE 09 COLUMN 15 VALUE '3 - ALTERAR'.
            05 LINE 10 COLUMN 15 VALUE '4 - EXCLUIR'.
-           05 LINE 11 COLUMN 15 VALUE '5 - RELATORIO'.
-           05 LINE 12 COLUMN 15 VALUE 'X - SAIR'.
-           05 LINE 13 COLUMN 15 VALUE 'OPCAO.......: ' .
-           05 LINE 13 COLUMN 28 USING  WRK-OPCAO.
+           05 LINE 11 COLUMN 15 VALUE '5 - RELATORIO EM TELA'.
+           05 LINE 12 COLUMN 15 VALUE '6 - RELATORIO EM DISCO'.
+           05 LINE 13 COLUMN 15 VALUE 'X - SAIR'.
+           05 LINE 14 COLUMN 15 VALUE 'OPCAO.......: ' .
+           05 LINE 14 COLUMN 28 USING  WRK-OPCAO.
 
 
        01  TELA-REGISTRO.
@@ -82,7 +93,7 @@
 
        1000-INICIAR SECTION.
            OPEN I-O CLIENTES
-           IF CLIENTES-STATUS EQUAL 35 THEN
+           IF CLIENTES-STATUS = 35 THEN
               OPEN OUTPUT CLIENTES
               CLOSE CLIENTES
               OPEN I-O CLIENTES
@@ -90,6 +101,7 @@
 
 
        1100-MONTA-TELA.
+               MOVE 0 TO WRK-QTREGISTROS.
            DISPLAY TELA.
              ACCEPT MENU.
 
@@ -106,7 +118,9 @@
                 WHEN 4
                   PERFORM 8000-EXCLUIR
                 WHEN 5
-                  CONTINUE
+                  PERFORM 9000-RELATORIOTELA
+                WHEN 6
+                  PERFORM 9100-RELATORIODISCO
                 WHEN OTHER
                   IF WRK-OPCAO NOT EQUAL 'X'
                      DISPLAY'ENTRE COM A OPCAO CORRETA'
@@ -186,3 +200,61 @@
                                ACCEPT MOSTRA-ERRO
                              END-DELETE
                      END-IF.
+
+       9000-RELATORIOTELA.
+             MOVE 'MODULO - RELATORIO ' TO WRK-MODULO.
+             DISPLAY TELA.
+             MOVE 123456789 TO CLIENTES-FONE.
+             START CLIENTES KEY EQUAL CLIENTES-FONE.
+             READ CLIENTES
+               INVALID KEY
+                 MOVE 'NENHUM REGISTRO ENCONTRADO' TO WRK-MSGERRO
+               NOT INVALID KEY
+                 DISPLAY '  RELATORIO DE CLIENTES '
+                 DISPLAY '------------------------'
+                 PERFORM UNTIL CLIENTES-STATUS = 10
+                   ADD 1 TO WRK-QTREGISTROS
+                   DISPLAY CLIENTES-FONE ' '
+                           CLIENTES-NOME ' '
+                           CLIENTES-EMAIL' '
+
+                   READ CLIENTES NEXT
+
+                   ADD 1 TO WRK-CONT-LIN
+                 IF WRK-CONT-LIN = 5
+                    MOVE 'PRECIONE ALGUMA TECLA ' TO WRK-MSGERRO
+                    ACCEPT MOSTRA-ERRO
+                    DISPLAY '  RELATORIO DE CLIENTES '
+                    DISPLAY '------------------------'
+                    MOVE 0 TO WRK-CONT-LIN
+                 END-IF
+                 END-PERFORM
+             END-READ.
+               MOVE 'REGISTROS LIDOS ' TO WRK-MSGERRO.
+               MOVE WRK-QTREGISTROS TO WRK-MSGERRO(17:05).
+               ACCEPT MOSTRA-ERRO.
+
+       9100-RELATORIODISCO.
+             MOVE 'MODULO - RELATORIO ' TO WRK-MODULO.
+             DISPLAY TELA.
+             MOVE 123456789 TO CLIENTES-FONE.
+             START CLIENTES KEY EQUAL CLIENTES-FONE.
+             READ CLIENTES
+               INVALID KEY
+                 MOVE 'NENHUM REGISTRO ENCONTRADO' TO WRK-MSGERRO
+               NOT INVALID KEY
+                OPEN OUTPUT RELATO
+                 PERFORM UNTIL CLIENTES-STATUS = 10
+                   ADD 1 TO WRK-QTREGISTROS
+                     MOVE CLIENTES-REG TO RELATO-REG
+                     WRITE RELATO-REG
+                     CLOSE RELATO
+
+                   READ CLIENTES NEXT
+                 END-PERFORM
+                   MOVE 'REGISTROS LIDOS ' TO RELATO-REG
+                   MOVE WRK-QTREGISTROS    TO RELATO-REG(18:05)
+             END-READ.
+               MOVE 'REGISTROS LIDOS ' TO WRK-MSGERRO.
+               MOVE WRK-QTREGISTROS TO WRK-MSGERRO(17:05).
+               ACCEPT MOSTRA-ERRO.
