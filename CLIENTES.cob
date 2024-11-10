@@ -18,7 +18,7 @@
        FD CLIENTES.
        01  CLIENTES-REG.
            05 CLIENTES-CHAVE.
-              10 CLIENTES-FONE PIC 9(11).
+              10 CLIENTES-FONE PIC 9(09).
            05 CLIENTES-NOME    PIC X(30).
            05 CLIENTES-EMAIL   PIC X(40).
 
@@ -94,7 +94,7 @@
              ACCEPT MENU.
 
        2000-PROCESSAR.
-               MOVE SPACES TO WRK-MSGERRO.
+               MOVE SPACES TO CLIENTES-NOME CLIENTES-EMAIL WRK-MSGERRO.
                EVALUATE WRK-OPCAO
                 WHEN 1
                   PERFORM 5000-INCLUIR
@@ -103,7 +103,7 @@
                 WHEN 3
                   CONTINUE
                 WHEN 4
-                  CONTINUE
+                  PERFORM 8000-EXCLUIR
                 WHEN 5
                   CONTINUE
                 WHEN OTHER
@@ -135,10 +135,32 @@
                  ACCEPT CHAVE.
                  READ CLIENTES
                    INVALID KEY
-                     MOVE 'ENCONTRADO'   TO WRK-MSGERRO
-                     DISPLAY SS-DADOS
-                   NOT INVALID KEY
-                     MOVE '-- NAO ENCONTRADO --' TO WRK-MSGERRO
+                     MOVE '-- NAO ENCONTRADO --'   TO WRK-MSGERRO
 
+                   NOT INVALID KEY
+                     MOVE '-- ENCONTRADO --' TO WRK-MSGERRO
+                     DISPLAY SS-DADOS
                  END-READ.
                    ACCEPT MOSTRA-ERRO.
+
+
+       8000-EXCLUIR.
+             MOVE 'MODULO - EXCLUSAO ' TO WRK-MODULO.
+             DISPLAY TELA.
+               DISPLAY TELA-REGISTRO.
+                 ACCEPT CHAVE.
+                 READ CLIENTES
+                   INVALID KEY
+                     MOVE '-- NAO ENCONTRADO --' TO WRK-MSGERRO
+                   NOT INVALID KEY
+                     MOVE '-- ENCONTRADO   (S/N) ?' TO WRK-MSGERRO
+                       DISPLAY SS-DADOS
+                 END-READ.
+                   ACCEPT MOSTRA-ERRO.
+                     IF WRK-TECLA = 'S' AND CLIENTES-STATUS = 0
+                           DELETE CLIENTES
+                           INVALID KEY
+                             MOVE 'NAO EXCLUIDO' TO WRK-MSGERRO
+                               ACCEPT MOSTRA-ERRO
+                             END-DELETE
+                     END-IF.
