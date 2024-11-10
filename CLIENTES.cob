@@ -44,9 +44,9 @@
        01  MENU.
            05 LINE 07 COLUMN 15 VALUE '1 - INCLUIR'.
            05 LINE 08 COLUMN 15 VALUE '2 - CONSULTAR'.
-           05 LINE 09 COLUMN 15 VALUE '4 - ALTERAR'.
-           05 LINE 10 COLUMN 15 VALUE '5 - EXCLUIR'.
-           05 LINE 11 COLUMN 15 VALUE '6 - RELATORIO'.
+           05 LINE 09 COLUMN 15 VALUE '3 - ALTERAR'.
+           05 LINE 10 COLUMN 15 VALUE '4 - EXCLUIR'.
+           05 LINE 11 COLUMN 15 VALUE '5 - RELATORIO'.
            05 LINE 12 COLUMN 15 VALUE 'X - SAIR'.
            05 LINE 13 COLUMN 15 VALUE 'OPCAO.......: ' .
            05 LINE 13 COLUMN 28 USING  WRK-OPCAO.
@@ -95,13 +95,14 @@
 
        2000-PROCESSAR.
                MOVE SPACES TO CLIENTES-NOME CLIENTES-EMAIL WRK-MSGERRO.
+               MOVE ZEROS TO CLIENTES-FONE.
                EVALUATE WRK-OPCAO
                 WHEN 1
                   PERFORM 5000-INCLUIR
                 WHEN 2
                   PERFORM 6000-CONSULTAR
                 WHEN 3
-                  CONTINUE
+                  PERFORM 7000-ALTERAR
                 WHEN 4
                   PERFORM 8000-EXCLUIR
                 WHEN 5
@@ -142,6 +143,27 @@
                      DISPLAY SS-DADOS
                  END-READ.
                    ACCEPT MOSTRA-ERRO.
+
+       7000-ALTERAR.
+             MOVE 'MODULO - ALTERAÇÃO ' TO WRK-MODULO.
+             DISPLAY TELA.
+             DISPLAY TELA-REGISTRO.
+               ACCEPT CHAVE.
+                 READ CLIENTES.
+                 IF CLIENTES-STATUS = 0
+                    ACCEPT SS-DADOS
+                     REWRITE CLIENTES-REG
+                      IF CLIENTES-STATUS = 0
+                         MOVE '-- REGISTRO ALTERADO --' TO WRK-MSGERRO
+                           ACCEPT WRK-MSGERRO
+                      ELSE
+                         MOVE 'REGISTRO NAO ALTERADO' TO WRK-MSGERRO
+                         ACCEPT MOSTRA-ERRO
+                      END-IF
+                 ELSE
+                      MOVE 'REGISTRO NAO ENCONTRADO' TO WRK-MSGERRO
+                      ACCEPT MOSTRA-ERRO
+                 END-IF.
 
 
        8000-EXCLUIR.
