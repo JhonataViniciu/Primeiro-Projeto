@@ -13,19 +13,12 @@ Primeiro Projeto fazendo um Sistema de Gestao de Clientes. Tratando dos principa
 
 
 -------------------------------------------------
---            Projeto Similar                  --
+--          Projeto Caixa Eletronico           --
 -------------------------------------------------
-Começado em 10/10/24.
+Inicio do Projeto Caixa Eletronico 08/12/24.                                                                                    
 
-Sistema de Gerenciamento de Estoque e Gestao de Clientes.
+Projeto Caixa Eletronico                                                                                                                
 
-Seguindo o treinamento do Projeto Sistem De Gestao, agora hora de implememtar um sistema de 
-gerenciamento de estoque junto com um sistema de gestao de clientes.
-
-Proposta: Utilizar o sistema de gestao passado juntamente com um sistema para gerenciar um
-estoque de uma empresa.
-
-Objetivo: 
-- Aperfeiçoar layout de vizualização.
-- Criar um Sitema de Estoque.
-- Interação direta com ambos os sistemas.
+Segundo Projeto com o objetivo de aperfeiçoar a programação em COBOL. Objetivo:                                                            
+- Fazer um programa de Caixa Eletronico.
+- Treinar metodos da linguagem.
